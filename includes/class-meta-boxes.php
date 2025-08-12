@@ -1,70 +1,117 @@
 <?php
-// Evita el acceso directo
-if (!defined('ABSPATH')) {
-    exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit; // Evitar acceso directo
 
-// Hook para registrar los metaboxes
-add_action('add_meta_boxes', 'sm_add_class_meta_boxes');
-
-// Hook para guardar los datos
-add_action('save_post', 'sm_save_class_meta_boxes');
-
-// Función que crea los campos en el panel de edición
-function sm_add_class_meta_boxes() {
+// === Registrar el metabox ===
+add_action('add_meta_boxes', 'sm_add_class_metaboxes');
+function sm_add_class_metaboxes() {
     add_meta_box(
-        'sm_class_details',         // ID del metabox
-        'Detalles de la Clase',     // Título visible
-        'sm_render_class_fields',   // Función que dibuja los campos
-        'sm_clase',                 // Tipo de post al que aplica
-        'normal',                   // Contexto
-        'high'                      // Prioridad
+        'sm_class_data',
+        __('Datos de la Clase', 'school-manager'),
+        'sm_class_metabox_callback',
+        'class',
+        'normal',
+        'default'
     );
 }
 
-// Renderiza los campos personalizados
-function sm_render_class_fields($post) {
-    // Recuperamos valores guardados anteriormente (si existen)
-    $precio = get_post_meta($post->ID, '_sm_precio', true);
-    $duracion = get_post_meta($post->ID, '_sm_duracion', true);
-    $nivel = get_post_meta($post->ID, '_sm_nivel', true);
-    $deporte = get_post_meta($post->ID, '_sm_deporte', true);
+// === Dibujar el metabox ===
+function sm_class_metabox_callback($post) {
+    wp_nonce_field('sm_save_class', 'sm_class_nonce');
 
+    // Obtener datos guardados o poner en blanco
+    $precio     = get_post_meta($post->ID, '_sm_precio', true) ?: '';
+    $duracion   = get_post_meta($post->ID, '_sm_duracion', true) ?: '';
+    $deporte    = get_post_meta($post->ID, '_sm_deporte', true) ?: '';
+    $nivel      = get_post_meta($post->ID, '_sm_nivel', true) ?: '';
+    $profesor   = get_post_meta($post->ID, '_sm_profesor', true) ?: '';
+    $fecha      = get_post_meta($post->ID, '_sm_fecha', true) ?: '';
+    $hora       = get_post_meta($post->ID, '_sm_hora', true) ?: '';
+    $cupos      = get_post_meta($post->ID, '_sm_cupos', true) ?: '';
+
+    $niveles = array(
+        'Principiante' => __('Principiante', 'school-manager'),
+        'Intermedio'   => __('Intermedio', 'school-manager'),
+        'Avanzado'     => __('Avanzado', 'school-manager'),
+    );
     ?>
-    <label for="sm_precio">Precio ($):</label><br>
-    <input type="number" name="sm_precio" id="sm_precio" value="<?php echo esc_attr($precio); ?>"><br><br>
+    <style>
+      .sm-field { margin-bottom: 12px; }
+      .sm-field label { display:block; font-weight:600; margin-bottom:6px; }
+      .sm-field input, .sm-field select { width:100%; max-width: 400px; }
+    </style>
 
-    <label for="sm_duracion">Duración (minutos):</label><br>
-    <input type="number" name="sm_duracion" id="sm_duracion" value="<?php echo esc_attr($duracion); ?>"><br><br>
+    <div class="sm-field">
+        <label for="sm_precio"><?php _e('Precio ($):', 'school-manager'); ?></label>
+        <input type="number" step="0.01" min="0" id="sm_precio" name="_sm_precio" value="<?php echo esc_attr($precio); ?>" />
+    </div>
 
-    <label for="sm_deporte">Tipo de Deporte:</label><br>
-    <input type="text" name="sm_deporte" id="sm_deporte" value="<?php echo esc_attr($deporte); ?>"><br><br>
+    <div class="sm-field">
+        <label for="sm_duracion"><?php _e('Duración (minutos):', 'school-manager'); ?></label>
+        <input type="number" step="1" min="0" id="sm_duracion" name="_sm_duracion" value="<?php echo esc_attr($duracion); ?>" />
+    </div>
 
-    <label for="sm_nivel">Nivel:</label><br>
-    <select name="sm_nivel" id="sm_nivel">
-        <option value="Principiante" <?php selected($nivel, 'Principiante'); ?>>Principiante</option>
-        <option value="Intermedio" <?php selected($nivel, 'Intermedio'); ?>>Intermedio</option>
-        <option value="Avanzado" <?php selected($nivel, 'Avanzado'); ?>>Avanzado</option>
-    </select>
+    <div class="sm-field">
+        <label for="sm_deporte"><?php _e('Tipo de Deporte:', 'school-manager'); ?></label>
+        <input type="text" id="sm_deporte" name="_sm_deporte" value="<?php echo esc_attr($deporte); ?>" />
+    </div>
+
+    <div class="sm-field">
+        <label for="sm_nivel"><?php _e('Nivel:', 'school-manager'); ?></label>
+        <select id="sm_nivel" name="_sm_nivel">
+            <option value=""><?php _e('Selecciona un nivel', 'school-manager'); ?></option>
+            <?php foreach ($niveles as $key => $label): ?>
+                <option value="<?php echo esc_attr($key); ?>" <?php selected($nivel, $key); ?>>
+                    <?php echo esc_html($label); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="sm-field">
+        <label for="sm_profesor"><?php _e('Profesor asignado:', 'school-manager'); ?></label>
+        <input type="text" id="sm_profesor" name="_sm_profesor" value="<?php echo esc_attr($profesor); ?>" />
+    </div>
+
+    <div class="sm-field">
+        <label for="sm_fecha"><?php _e('Fecha de la clase:', 'school-manager'); ?></label>
+        <input type="date" id="sm_fecha" name="_sm_fecha" value="<?php echo esc_attr($fecha); ?>" />
+    </div>
+
+    <div class="sm-field">
+        <label for="sm_hora"><?php _e('Hora de la clase:', 'school-manager'); ?></label>
+        <input type="time" id="sm_hora" name="_sm_hora" value="<?php echo esc_attr($hora); ?>" />
+    </div>
+
+    <div class="sm-field">
+        <label for="sm_cupos"><?php _e('Cupos disponibles:', 'school-manager'); ?></label>
+        <input type="number" id="sm_cupos" name="_sm_cupos" value="<?php echo esc_attr($cupos); ?>" />
+    </div>
     <?php
 }
 
-// Guarda los valores cuando el post se actualiza
-function sm_save_class_meta_boxes($post_id) {
-    // Evita errores en guardado automático
+// === Guardar datos del metabox ===
+add_action('save_post', 'sm_save_class_meta');
+function sm_save_class_meta($post_id) {
+    if (isset($_POST['post_type']) && $_POST['post_type'] !== 'class') return;
+    if (!isset($_POST['sm_class_nonce']) || !wp_verify_nonce($_POST['sm_class_nonce'], 'sm_save_class')) return;
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
 
-    // Guardamos los campos si existen
-    if (isset($_POST['sm_precio'])) {
-        update_post_meta($post_id, '_sm_precio', sanitize_text_field($_POST['sm_precio']));
-    }
-    if (isset($_POST['sm_duracion'])) {
-        update_post_meta($post_id, '_sm_duracion', sanitize_text_field($_POST['sm_duracion']));
-    }
-    if (isset($_POST['sm_deporte'])) {
-        update_post_meta($post_id, '_sm_deporte', sanitize_text_field($_POST['sm_deporte']));
-    }
-    if (isset($_POST['sm_nivel'])) {
-        update_post_meta($post_id, '_sm_nivel', sanitize_text_field($_POST['sm_nivel']));
+    // Guardar
+    $campos = array(
+        '_sm_precio',
+        '_sm_duracion',
+        '_sm_deporte',
+        '_sm_nivel',
+        '_sm_profesor',
+        '_sm_fecha',
+        '_sm_hora',
+        '_sm_cupos'
+    );
+
+    foreach ($campos as $campo) {
+        if (isset($_POST[$campo])) {
+            update_post_meta($post_id, $campo, sanitize_text_field($_POST[$campo]));
+        }
     }
 }
