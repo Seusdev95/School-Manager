@@ -3,47 +3,59 @@ get_header();
 ?>
 
 <style>
+/* ====== GRID DE CLASES ====== */
 .clases-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  padding: 30px;
 }
 .clase-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-  transition: 0.3s;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .clase-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 .clase-card img {
-  max-width: 100%;
-  border-radius: 6px;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+.clase-card-body {
+  padding: 20px;
 }
 .clase-card h3 {
-  margin-top: 10px;
+  margin: 0 0 10px;
   color: #0077b6;
+  font-size: 1.4rem;
 }
-.clase-card p { margin: 5px 0; }
-.clase-card a {
+.clase-meta {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 6px;
+}
+.clase-card .btn {
   display: inline-block;
   margin-top: 10px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background-color: #0077b6;
-  color: white;
+  color: #fff;
+  border-radius: 6px;
   text-decoration: none;
-  border-radius: 5px;
+  font-weight: bold;
 }
-.clase-card a:hover { background-color: #023e8a; }
+.clase-card .btn:hover {
+  background-color: #023e8a;
+}
 </style>
 
 <main>
-  <h2 style="text-align:center; margin-top:20px;">Clases disponibles</h2>
+  <h2 style="text-align:center; margin:20px 0;">Clases disponibles</h2>
   <div class="clases-container">
     <?php if (have_posts()): ?>
       <?php while (have_posts()): the_post();
@@ -60,18 +72,20 @@ get_header();
       ?>
         <article class="clase-card">
           <?php if (has_post_thumbnail()) the_post_thumbnail('medium'); ?>
-          <h3><?php the_title(); ?></h3>
-          
-          <?php if ($deporte)   echo "<p>Deporte: " . esc_html($deporte) . "</p>"; ?>
-          <?php if ($nivel)     echo "<p>Nivel: " . esc_html($nivel) . "</p>"; ?>
-          <?php if ($profesor)  echo "<p>Profesor: " . esc_html($profesor) . "</p>"; ?>
-          <?php if ($fecha)     echo "<p>Fecha: " . esc_html($fecha) . "</p>"; ?>
-          <?php if ($hora)      echo "<p>Hora: " . esc_html($hora) . "</p>"; ?>
-          <?php if ($cupos)     echo "<p>Cupos: " . esc_html($cupos) . "</p>"; ?>
-          <?php if ($duracion)  echo "<p>Duración: " . esc_html($duracion) . " minutos</p>"; ?>
-          <?php if ($precio)    echo "<p>Precio: $" . esc_html($precio) . " COP</p>"; ?>
-          
-          <a href="<?php the_permalink(); ?>">Ver detalles</a>
+          <div class="clase-card-body">
+            <h3><?php the_title(); ?></h3>
+            
+            <?php if ($deporte)   echo "<div class='clase-meta'><strong>Deporte:</strong> " . esc_html($deporte) . "</div>"; ?>
+            <?php if ($nivel)     echo "<div class='clase-meta'><strong>Nivel:</strong> " . esc_html($nivel) . "</div>"; ?>
+            <?php if ($profesor)  echo "<div class='clase-meta'><strong>Profesor:</strong> " . esc_html($profesor) . "</div>"; ?>
+            <?php if ($fecha)     echo "<div class='clase-meta'><strong>Fecha:</strong> " . esc_html($fecha) . "</div>"; ?>
+            <?php if ($hora)      echo "<div class='clase-meta'><strong>Hora:</strong> " . esc_html($hora) . "</div>"; ?>
+            <?php if ($cupos)     echo "<div class='clase-meta'><strong>Cupos:</strong> " . esc_html($cupos) . "</div>"; ?>
+            <?php if ($duracion)  echo "<div class='clase-meta'><strong>Duración:</strong> " . esc_html($duracion) . " min</div>"; ?>
+            <?php if ($precio)    echo "<div class='clase-meta'><strong>Precio:</strong> $" . esc_html($precio) . " COP</div>"; ?>
+            
+            <a href="<?php the_permalink(); ?>" class="btn">Ver detalles</a>
+          </div>
         </article>
       <?php endwhile; ?>
     <?php else: ?>
@@ -82,4 +96,3 @@ get_header();
 
 <?php
 get_footer();
-?>

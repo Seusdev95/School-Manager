@@ -31,15 +31,15 @@ function sm_register_post_type_class() {
         'show_ui'               => true,
         'show_in_menu'          => true,
         'query_var'             => true,
-        'rewrite'               => array( 'slug' => 'clases' ),
+        'rewrite'               => array( 'slug' => 'classes' ), // URL será /clases
         'capability_type'       => 'post',
-        'has_archive'           => true,
+        'has_archive'           => true, // Habilita el archivo (/clases)
         'hierarchical'          => false,
         'menu_position'         => 5,
         'menu_icon'             => 'dashicons-welcome-learn-more', // Icono en el admin
         'supports'              => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
-        'taxonomies'            => array( 'sport', 'level' ), // Conecta con tus taxonomías
-        'show_in_rest'          => true, // Compatible con el editor de bloques
+        'taxonomies'            => array( 'sport', 'level' ), // Si usas taxonomías personalizadas
+        'show_in_rest'          => true, // Compatible con el editor de bloques Gutenberg
     );
 
     register_post_type( 'class', $args );
